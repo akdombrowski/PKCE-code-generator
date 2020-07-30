@@ -6,21 +6,24 @@ import TextField from "@material-ui/core/TextField";
 import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
 import Grid from "@material-ui/core/Grid";
-import Popover from "@material-ui/core/Popover";
 import Typography from "@material-ui/core/Typography";
 import LockOpenIcon from "@material-ui/icons/LockOpen";
 import { makeStyles } from "@material-ui/core/styles";
-import * as jwtDecoder from "jwt-js-decode";
-import JSONPretty from "react-json-pretty";
-import JSONPrettyMon from "./App.css";
+import Slider from "@material-ui/core/Slider";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
+import Radio from "@material-ui/core/Radio";
+import RadioGroup from "@material-ui/core/RadioGroup";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormControl from "@material-ui/core/FormControl";
+import FormLabel from "@material-ui/core/FormLabel";
 
 import { importMDX } from "mdx.macro";
 
 // const Content = lazy(() => importMDX("./InfoText.mdx"));
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
-    maxHeight: "100vw"
+    maxHeight: "100vw",
   },
   image: {
     backgroundImage:
@@ -29,7 +32,7 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: "#576877",
     backgroundSize: "cover",
     backgroundPosition: "center",
-    maxHeight: "20vw"
+    maxHeight: "20vw",
   },
   paper: {
     margin: theme.spacing(8, 4),
@@ -38,38 +41,38 @@ const useStyles = makeStyles(theme => ({
     flexDirection: "column",
     alignItems: "stretch",
     justifyContent: "flex-start",
-    color: "#2E4355"
+    color: "#2E4355",
   },
   avatar: {
     margin: theme.spacing(1),
-    backgroundColor: "#2E4355"
+    backgroundColor: "#2E4355",
   },
   form: {
     width: "100%", // Fix IE 11 issue.
-    marginTop: theme.spacing(10)
+    marginTop: theme.spacing(10),
   },
   submit: {
     backgroundColor: "#2E4355",
-    margin: theme.spacing(3, 0, 2)
+    margin: theme.spacing(3, 0, 2),
   },
   typography: {
     color: "#2E4355",
-    fontSize: "1rem"
+    fontSize: "1rem",
   },
   errorMessage: {
-    color: "red"
+    color: "red",
   },
   infoPaperContainer: {
     maxHeight: "100%",
-    overflow: "auto"
+    overflow: "auto",
   },
   info: {
     height: "100%",
     maxHeight: "100%",
     color: "#2E4355",
     margin: "0",
-    padding: "0"
-  }
+    padding: "0",
+  },
 }));
 
 export default function App() {
@@ -77,19 +80,22 @@ export default function App() {
   const classes = useStyles();
 
   // State variables and setters.
-  const [jot, setJot] = useState("");
-  const [decodedJot, setDecodedJot] = useState("");
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [jotError, setJotError] = React.useState(null);
+  const [numChars, setNumChars] = useState(32);
+  const [randomStr, setRandomStr] = useState("");
+  const [codeVerifier, setCodeVerifier] = useState("");
+  const [codeChallenge, setCodeChallenge] = useState("");
+  const [codeChallengeMethod, setCodeChallengeMethod] = useState("S256");
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [jotError, setJotError] = useState(null);
 
   const open = Boolean(anchorEl);
   const id = open ? "popover" : undefined;
 
-  const handleSubmit = event => {
+  const handleSubmit = (event) => {
     event.preventDefault();
 
     try {
-      decode();
+      generateRandomStr();
     } catch (e) {
       // Gets the reason for failure.
       let msg = e.message.split(". ")[1];
@@ -99,53 +105,28 @@ export default function App() {
     }
   };
 
-  const handleJWTChange = event => {
+  const handleNumCharsChange = (event, newValue) => {
+    setNumChars(newValue);
     event.preventDefault();
-    setJot(event.target.value);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleCodeChallengeMethodChange = (event, newValue) => {
+    setCodeChallengeMethod(newValue);
+    event.preventDefault();
   };
 
-  const decode = () => {
-    let dj = jwtDecoder.jwtDecode(jot);
-    setDecodedJot(dj);
+  const generateRandomStr = () => {
+    let dj = "";
+    setCodeVerifier(dj);
   };
+
+  const generateCodeVerifier = () => {};
+
+  const generateCodeChallenge = () => {};
 
   return (
     <Grid container component="main" className={classes.root}>
       <CssBaseline />
-      {/* <Grid
-        container
-        item
-        xs={5}
-        direction="column"
-        style={{
-          overflow: "auto"
-        }}
-      >
-        <Grid
-          item
-          spacing={0}
-          className={classes.image}
-          style={{ maxHeight: "20vw", flex: "0 2 auto" }}
-        ></Grid>
-        <Grid
-          item
-          spacing={0}
-          style={{
-            paddingLeft: "15%",
-            paddingRight: "15%",
-            margin: "0",
-            flex: "2 1 auto"
-          }}
-        >
-          <Suspense fallback={<div>Loading...</div>} id="suspense">
-            <Content id="content" />
-          </Suspense>
-        </Grid>
-      </Grid> */}
 
       <Grid
         item
@@ -163,18 +144,21 @@ export default function App() {
             xs={12}
             justify="center"
             style={{
-              flex: "0 1 0"
+              flex: "0 1 0",
             }}
           >
             <Avatar className={classes.avatar}>
               <LockOpenIcon />
             </Avatar>
           </Grid>
+
+          {/* Title */}
           <Grid item xs={12} style={{ flex: "0 1 0" }}>
             <Typography component="h3" variant="h3" align="center">
-              JWT Decoder
+              PKCE Code Generator
             </Typography>
           </Grid>
+
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <Grid
               item
@@ -185,43 +169,48 @@ export default function App() {
               xs={12}
               style={{ flex: "10 0 auto" }}
             >
-              <Grid item xs={12} style={{ flex: "10 0 auto" }}>
-                {/* JWT input field */}
-                <TextField
-                  variant="outlined"
-                  margin="none"
-                  required
-                  fullWidth
-                  id="jwt"
-                  label="JWT"
-                  name="JWT"
-                  value={jot}
-                  autoFocus
-                  rowsMax={4}
-                  multiline
-                  onChange={handleJWTChange}
-                />
+              <Grid item xs={12} style={{ flex: "1 0 auto" }}>
+                <Typography>Number of Characters</Typography>
 
-                {/* Error Message for JWT String Decode */}
-                <Popover
-                  id={id}
-                  open={open}
-                  anchorEl={anchorEl}
-                  onClose={handleClose}
-                  anchorOrigin={{
-                    vertical: "center",
-                    horizontal: "center"
-                  }}
-                  transformOrigin={{
-                    vertical: "top",
-                    horizontal: "center"
-                  }}
-                >
-                  <Typography className={classes.errorMessage}>
-                    {jotError}
-                  </Typography>
-                </Popover>
+                <Box style={{ paddingTop: "30px" }}>
+                  <Slider
+                    value={numChars}
+                    min={43}
+                    max={256}
+                    onChange={handleNumCharsChange}
+                    valueLabelDisplay="on"
+                    aria-labelledby="continuous-slider"
+                  />
+                </Box>
               </Grid>
+              <Grid item xs={12} style={{ flex: "1 0 auto" }}>
+                <Typography>Code Challenge Method</Typography>
+
+                <Box>
+                  <FormControl required component="fieldset">
+                    <RadioGroup
+                    row
+                      aria-label="code-challenge-method"
+                      name="code-challenge-method"
+                      value={codeChallengeMethod}
+                      onChange={handleCodeChallengeMethodChange}
+                    >
+                      <FormControlLabel
+                        value="Plain"
+                        control={<Radio />}
+                        label="Plain"
+                      />
+                      <FormControlLabel
+                        value="S256"
+                        control={<Radio />}
+                        label="SHA-256"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+                </Box>
+              </Grid>
+
+              {/* Generate Button */}
               <Grid item xs={12} style={{ flex: "1 0 auto" }}>
                 <Button
                   type="submit"
@@ -230,11 +219,12 @@ export default function App() {
                   color="primary"
                   className={classes.submit}
                 >
-                  Decode
+                  Generate New
                 </Button>
               </Grid>
               <Grid item xs={12} style={{ flex: "10 0 auto" }}>
-                <Typography>Header</Typography>
+                {/* Random String */}
+                <Typography>Random String</Typography>
                 <Box
                   border={1}
                   borderRadius={5}
@@ -245,28 +235,26 @@ export default function App() {
                   marginBottom="1rem"
                   padding="0"
                 >
-                  {decodedJot ? (
-                    <JSONPretty
-                      id="pretty-header"
-                      data={decodedJot.header}
-                      theme={JSONPrettyMon}
-                      paddingTop="0"
-                      marginTop="0"
-                      style={{
-                        margin: 0,
-                        padding: 0,
-                        fontSize: "1rem"
-                      }}
-                      mainStyle="padding: 0, margin: 0"
-                      valueStyle="padding: 0, margin: 0"
-                    />
-                  ) : (
-                    ""
-                  )}
+                  <Typography>{randomStr}</Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} style={{ flex: "10 0 auto" }}>
-                <Typography>Payload</Typography>
+                <Typography>Code-Verifier</Typography>
+                <Box
+                  border={1}
+                  borderRadius={5}
+                  borderColor="#576877"
+                  height="100%"
+                  minHeight="10vh"
+                  marginTop="0rem"
+                  marginBottom="1rem"
+                  padding="0"
+                >
+                  <Typography>43 chars</Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} style={{ flex: "10 0 auto" }}>
+                <Typography>Code-Challenge</Typography>
                 <Box
                   border={1}
                   borderRadius={5}
@@ -276,22 +264,21 @@ export default function App() {
                   marginTop="0rem"
                   marginBottom="0rem"
                 >
-                  {decodedJot ? (
-                    <JSONPretty
-                      id="pretty-payload"
-                      data={decodedJot.payload}
-                      theme={JSONPrettyMon}
-                      style={{
-                        margin: 0,
-                        padding: 0,
-                        fontSize: "1rem"
-                      }}
-                      mainStyle="padding: 0, margin: 0"
-                      valueStyle="padding: 0, margin: 0"
-                    />
-                  ) : (
-                    ""
-                  )}
+                  <Typography>code challenge</Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} style={{ flex: "10 0 auto" }}>
+                <Typography>Code-Challenge-Method</Typography>
+                <Box
+                  border={1}
+                  borderRadius={5}
+                  borderColor="#576877"
+                  height="100%"
+                  minHeight="20vh"
+                  marginTop="0rem"
+                  marginBottom="0rem"
+                >
+                  <Typography>Plain, S256</Typography>
                 </Box>
               </Grid>
             </Grid>
