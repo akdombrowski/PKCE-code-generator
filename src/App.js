@@ -16,6 +16,9 @@ import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
+import CryptoJS from "crypto-js";
+import base64url from "base64url";
+import CryptoRandomString from "crypto-random-string";
 
 import { importMDX } from "mdx.macro";
 
@@ -80,8 +83,7 @@ export default function App() {
   const classes = useStyles();
 
   // State variables and setters.
-  const [numChars, setNumChars] = useState(32);
-  const [randomStr, setRandomStr] = useState("");
+  const [numChars, setNumChars] = useState(128);
   const [codeVerifier, setCodeVerifier] = useState("");
   const [codeChallenge, setCodeChallenge] = useState("");
   const [codeChallengeMethod, setCodeChallengeMethod] = useState("S256");
@@ -92,17 +94,9 @@ export default function App() {
   const id = open ? "popover" : undefined;
 
   const handleSubmit = (event) => {
+    generateCodeVerifier();
+    generateCodeChallenge();
     event.preventDefault();
-
-    try {
-      generateRandomStr();
-    } catch (e) {
-      // Gets the reason for failure.
-      let msg = e.message.split(". ")[1];
-      console.error(msg);
-      setJotError(msg);
-      setAnchorEl(event.currentTarget);
-    }
   };
 
   const handleNumCharsChange = (event, newValue) => {
@@ -115,14 +109,23 @@ export default function App() {
     event.preventDefault();
   };
 
-  const generateRandomStr = () => {
-    let dj = "";
-    setCodeVerifier(dj);
+  const generateRandomStr = function (length) {
+    return CryptoRandomString({length: length})
   };
 
-  const generateCodeVerifier = () => {};
+  const generateCodeVerifier = () => {
+    let randStr = generateRandomStr(numChars);
+    setCodeVerifier(randStr);
+  };
 
-  const generateCodeChallenge = () => {};
+  const generateCodeChallenge = () => {
+    if (codeChallengeMethod === "S256") {
+      let encrypted = CryptoJS.SHA256(base64url(codeVerifier));
+      setCodeChallenge(encrypted.toString(CryptoJS.enc.Hex));
+    } else {
+      setCodeChallenge(codeVerifier);
+    }
+  };
 
   return (
     <Grid container component="main" className={classes.root}>
@@ -176,7 +179,7 @@ export default function App() {
                   <Slider
                     value={numChars}
                     min={43}
-                    max={256}
+                    max={128}
                     onChange={handleNumCharsChange}
                     valueLabelDisplay="on"
                     aria-labelledby="continuous-slider"
@@ -189,7 +192,7 @@ export default function App() {
                 <Box>
                   <FormControl required component="fieldset">
                     <RadioGroup
-                    row
+                      row
                       aria-label="code-challenge-method"
                       name="code-challenge-method"
                       value={codeChallengeMethod}
@@ -222,9 +225,11 @@ export default function App() {
                   Generate New
                 </Button>
               </Grid>
+
               <Grid item xs={12} style={{ flex: "10 0 auto" }}>
-                {/* Random String */}
-                <Typography>Random String</Typography>
+                <Typography>
+                  Code-Verifier ({codeVerifier ? codeVerifier.length : 0} chars)
+                </Typography>
                 <Box
                   border={1}
                   borderRadius={5}
@@ -235,36 +240,24 @@ export default function App() {
                   marginBottom="1rem"
                   padding="0"
                 >
-                  <Typography>{randomStr}</Typography>
+                  <Typography>{codeVerifier}</Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} style={{ flex: "10 0 auto" }}>
-                <Typography>Code-Verifier</Typography>
+                <Typography>
+                  Code-Challenge ({codeChallenge ? codeChallenge.length : 0}{" "}
+                  chars)
+                </Typography>
                 <Box
                   border={1}
                   borderRadius={5}
                   borderColor="#576877"
                   height="100%"
                   minHeight="10vh"
-                  marginTop="0rem"
-                  marginBottom="1rem"
-                  padding="0"
-                >
-                  <Typography>43 chars</Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} style={{ flex: "10 0 auto" }}>
-                <Typography>Code-Challenge</Typography>
-                <Box
-                  border={1}
-                  borderRadius={5}
-                  borderColor="#576877"
-                  height="100%"
-                  minHeight="20vh"
                   marginTop="0rem"
                   marginBottom="0rem"
                 >
-                  <Typography>code challenge</Typography>
+                  <Typography>{codeChallenge}</Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} style={{ flex: "10 0 auto" }}>
@@ -274,11 +267,11 @@ export default function App() {
                   borderRadius={5}
                   borderColor="#576877"
                   height="100%"
-                  minHeight="20vh"
+                  minHeight="10vh"
                   marginTop="0rem"
                   marginBottom="0rem"
                 >
-                  <Typography>Plain, S256</Typography>
+                  <Typography>{codeChallengeMethod}</Typography>
                 </Box>
               </Grid>
             </Grid>
