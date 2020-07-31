@@ -41,6 +41,9 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(8, 4),
     display: "flex",
     height: "100%",
+    width: "100%",
+    maxWidth: "100%",
+    maxHeight: "100%",
     flexDirection: "column",
     alignItems: "stretch",
     justifyContent: "flex-start",
@@ -61,9 +64,6 @@ const useStyles = makeStyles((theme) => ({
   typography: {
     color: "#2E4355",
     fontSize: "1rem",
-  },
-  errorMessage: {
-    color: "red",
   },
   infoPaperContainer: {
     maxHeight: "100%",
@@ -87,15 +87,10 @@ export default function App() {
   const [codeVerifier, setCodeVerifier] = useState("");
   const [codeChallenge, setCodeChallenge] = useState("");
   const [codeChallengeMethod, setCodeChallengeMethod] = useState("S256");
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [jotError, setJotError] = useState(null);
-
-  const open = Boolean(anchorEl);
-  const id = open ? "popover" : undefined;
 
   const handleSubmit = (event) => {
-    generateCodeVerifier();
-    generateCodeChallenge();
+    let cVerifier = generateCodeVerifier();
+    generateCodeChallenge(cVerifier);
     event.preventDefault();
   };
 
@@ -110,20 +105,21 @@ export default function App() {
   };
 
   const generateRandomStr = function (length) {
-    return CryptoRandomString({length: length})
+    return CryptoRandomString({ length: length });
   };
 
   const generateCodeVerifier = () => {
     let randStr = generateRandomStr(numChars);
     setCodeVerifier(randStr);
+    return randStr;
   };
 
-  const generateCodeChallenge = () => {
+  const generateCodeChallenge = (cVerifier) => {
     if (codeChallengeMethod === "S256") {
-      let encrypted = CryptoJS.SHA256(base64url(codeVerifier));
+      let encrypted = CryptoJS.SHA256(base64url(cVerifier));
       setCodeChallenge(encrypted.toString(CryptoJS.enc.Hex));
     } else {
-      setCodeChallenge(codeVerifier);
+      setCodeChallenge(cVerifier);
     }
   };
 
@@ -138,7 +134,7 @@ export default function App() {
         component={Paper}
         elevation={6}
         square
-        style={{ height: "100%" }}
+        style={{ height: "100%", width: "100%", maxWidth: "100vw" }}
       >
         <Grid item container className={classes.paper} direction="column">
           <Grid
@@ -226,22 +222,35 @@ export default function App() {
                 </Button>
               </Grid>
 
-              <Grid item xs={12} style={{ flex: "10 0 auto" }}>
-                <Typography>
-                  Code-Verifier ({codeVerifier ? codeVerifier.length : 0} chars)
-                </Typography>
-                <Box
-                  border={1}
-                  borderRadius={5}
-                  borderColor="#576877"
-                  height="100%"
-                  minHeight="10vh"
-                  marginTop="0rem"
-                  marginBottom="1rem"
-                  padding="0"
-                >
-                  <Typography>{codeVerifier}</Typography>
-                </Box>
+              <Grid item container xs={12} style={{ flex: "10 0 auto" }}>
+                <Grid item xs={12}>
+                  <Typography>
+                    Code-Verifier ({codeVerifier ? codeVerifier.length : 0}{" "}
+                    chars)
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Box
+                    height="100%"
+                    minHeight="10vh"
+                    width="100%"
+                    minWidth="100%"
+                    maxWidth="100%"
+                    marginTop="0rem"
+                    marginBottom="1rem"
+                    padding="0"
+                    style={{}}
+                  >
+                    <TextField
+                      variant="outlined"
+                      fullWidth
+                      disabled
+                      value={codeVerifier}
+                      multiline
+                      placeholder="code-verifier"
+                    />
+                  </Box>
+                </Grid>
               </Grid>
               <Grid item xs={12} style={{ flex: "10 0 auto" }}>
                 <Typography>
@@ -249,29 +258,39 @@ export default function App() {
                   chars)
                 </Typography>
                 <Box
-                  border={1}
-                  borderRadius={5}
-                  borderColor="#576877"
                   height="100%"
                   minHeight="10vh"
                   marginTop="0rem"
                   marginBottom="0rem"
                 >
-                  <Typography>{codeChallenge}</Typography>
+                  <TextField
+                    variant="outlined"
+                    fullWidth
+                    disabled
+                    value={codeChallenge}
+                    multiline
+                    placeholder="code-challenge"
+                  />
                 </Box>
               </Grid>
               <Grid item xs={12} style={{ flex: "10 0 auto" }}>
                 <Typography>Code-Challenge-Method</Typography>
                 <Box
-                  border={1}
-                  borderRadius={5}
-                  borderColor="#576877"
                   height="100%"
                   minHeight="10vh"
                   marginTop="0rem"
                   marginBottom="0rem"
                 >
-                  <Typography>{codeChallengeMethod}</Typography>
+                  <TextField
+                    color="#000000"
+                    variant="outlined"
+                    fullWidth
+                    disabled
+                    value={codeChallengeMethod}
+                    multiline
+                    placeholder="code-challenge"
+                    style={{opacity: "100%"}}
+                  />
                 </Box>
               </Grid>
             </Grid>
