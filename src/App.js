@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense } from "react";
+import React, { useState } from "react";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -10,19 +10,13 @@ import Typography from "@material-ui/core/Typography";
 import LockOpenIcon from "@material-ui/icons/LockOpen";
 import { makeStyles } from "@material-ui/core/styles";
 import Slider from "@material-ui/core/Slider";
-import ButtonGroup from "@material-ui/core/ButtonGroup";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
 import CryptoJS from "crypto-js";
 import base64url from "base64url";
 import CryptoRandomString from "crypto-random-string";
-
-import { importMDX } from "mdx.macro";
-
-// const Content = lazy(() => importMDX("./InfoText.mdx"));
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -61,20 +55,14 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: "#2E4355",
     margin: theme.spacing(3, 0, 2),
   },
-  typography: {
+  thumbColorPrimary: {
     color: "#2E4355",
-    fontSize: "1rem",
   },
-  infoPaperContainer: {
-    maxHeight: "100%",
-    overflow: "auto",
-  },
-  info: {
-    height: "100%",
-    maxHeight: "100%",
+  track: {
     color: "#2E4355",
-    margin: "0",
-    padding: "0",
+  },
+  valueLabel: {
+    fontSize: ".8rem",
   },
 }));
 
@@ -163,7 +151,6 @@ export default function App() {
               item
               container
               direction="column"
-              justify="flex-between"
               alignItems="stretch"
               xs={12}
               style={{ flex: "10 0 auto" }}
@@ -173,6 +160,11 @@ export default function App() {
 
                 <Box style={{ paddingTop: "30px" }}>
                   <Slider
+                    classes={{
+                      thumbColorPrimary: classes.thumbColorPrimary,
+                      track: classes.track,
+                      valueLabel: classes.valueLabel,
+                    }}
                     value={numChars}
                     min={43}
                     max={128}
@@ -195,7 +187,7 @@ export default function App() {
                       onChange={handleCodeChallengeMethodChange}
                     >
                       <FormControlLabel
-                        value="Plain"
+                        value="plain"
                         control={<Radio />}
                         label="Plain"
                       />
@@ -212,6 +204,7 @@ export default function App() {
               {/* Generate Button */}
               <Grid item xs={12} style={{ flex: "1 0 auto" }}>
                 <Button
+                  className={classes.submit}
                   type="submit"
                   fullWidth
                   variant="contained"
@@ -237,17 +230,17 @@ export default function App() {
                     minWidth="100%"
                     maxWidth="100%"
                     marginTop="0rem"
-                    marginBottom="1rem"
+                    marginBottom="0rem"
                     padding="0"
                     style={{}}
                   >
                     <TextField
                       variant="outlined"
                       fullWidth
-                      disabled
                       value={codeVerifier}
                       multiline
                       placeholder="code-verifier"
+                      inputProps={{ readOnly: true }}
                     />
                   </Box>
                 </Grid>
@@ -266,10 +259,10 @@ export default function App() {
                   <TextField
                     variant="outlined"
                     fullWidth
-                    disabled
                     value={codeChallenge}
                     multiline
                     placeholder="code-challenge"
+                    inputProps={{ readOnly: true }}
                   />
                 </Box>
               </Grid>
@@ -282,14 +275,12 @@ export default function App() {
                   marginBottom="0rem"
                 >
                   <TextField
-                    color="#000000"
                     variant="outlined"
                     fullWidth
-                    disabled
                     value={codeChallengeMethod}
                     multiline
                     placeholder="code-challenge"
-                    style={{opacity: "100%"}}
+                    inputProps={{ readOnly: true }}
                   />
                 </Box>
               </Grid>
